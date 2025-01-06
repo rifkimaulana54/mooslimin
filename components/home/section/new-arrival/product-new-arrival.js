@@ -1,8 +1,10 @@
 import { Col, Container, Row } from "react-bootstrap";
 import ProductItem from "../../../product/product-item";
 import HomeSectionTitle from "../home-section-title";
+import { useRouter } from 'next/router';
 
 export default function ProductNewArrival() {
+  const router = useRouter();
   const products = [
     {
       id: 1,
@@ -53,7 +55,7 @@ export default function ProductNewArrival() {
 
   return (
     <div>
-      <HomeSectionTitle title={'Produk Terbaru'} subtitle={'Temukan Koleksi Produk Terbaru.'} button={'Belanja produk baru'}/>
+      <HomeSectionTitle title={'Produk Terbaru'} subtitle={'Temukan Koleksi Produk Terbaru.'} button={'Belanja produk baru'} onClick={() => router.push("new-arrivals")}/>
       <Container className="pb-5">
         <Row className="gy-5">
           {products.map((item) => (
