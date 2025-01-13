@@ -178,6 +178,14 @@ body {
   scrollbar-width: none; /* Firefox */
 }
 
+.centered-menu-item {
+  text-align: center;
+}
+
+.search-input-based {
+  width: 100%;
+}
+
   
 
   

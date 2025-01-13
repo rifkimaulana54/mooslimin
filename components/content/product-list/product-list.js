@@ -1,71 +1,100 @@
 import ProductItem from "../../product/product-item";
 import Filter from "./filter/filter";
 import { FormControl, MenuItem, Select, Pagination, Grid, Container } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function ProductList() {
     const [sort, setSort] = useState(1);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const handleChange = (event) => {
         setSort(event.target.value);
     };
-    const products = [
-        {
-            id: 1,
-            title: 'Product 1 ksjfldsjlk jdsfjdslkfjdlks fdslkfjdslkjfsdl fkldsjfkljds sdfdsfds dsfjldskfjl dsflsdjl',
-            price: 100000,
-            specialPrice: 80000,
-            image: "/images/product/image@2x.png",
-            brand: {
-                id: 1,
-                name: "Brand 1"
+    
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await  fetch("/api/product/list", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        category: "electronics", // Ganti dengan nilai sesuai kebutuhan
+                    }),
+                });
+                const data = await response.json();
+                setProducts(data);
+                setLoading(false);
+            } catch (error) {
+                console.error("Failed to fetch products:", error);
+                setLoading(false);
             }
-        },
-        {
-            id: 2,
-            title: 'Product 2',
-            price: 100000,
-            specialPrice: 80000,
-            image: "/images/product/image@2x.png",
-            brand: {
-                id: 1,
-                name: "Brand 1"
-            }
-        },
-        {
-            id: 3,
-            title: 'Product 3',
-            price: 100000,
-            specialPrice: 80000,
-            image: "/images/product/image@2x.png",
-            brand: {
-                id: 1,
-                name: "Brand 1"
-            }
-        },
-        {
-            id: 4,
-            title: 'Product 4',
-            price: 100000,
-            specialPrice: 80000,
-            image: "/images/product/image@2x.png",
-            brand: {
-                id: 1,
-                name: "Brand 1"
-            }
-        },
-        {
-            id: 5,
-            title: 'Product 5',
-            price: 100000,
-            specialPrice: 80000,
-            image: "/images/product/image@2x.png",
-            brand: {
-                id: 1,
-                name: "Brand 1"
-            }
-        }
-    ];
+        };
+
+        fetchProducts();
+    }, []);
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+    // const products = [
+    //     {
+    //         id: 1,
+    //         title: 'Product 1 ksjfldsjlk jdsfjdslkfjdlks fdslkfjdslkjfsdl fkldsjfkljds sdfdsfds dsfjldskfjl dsflsdjl',
+    //         price: 100000,
+    //         specialPrice: 80000,
+    //         image: "/images/product/image@2x.png",
+    //         brand: {
+    //             id: 1,
+    //             name: "Brand 1"
+    //         }
+    //     },
+    //     {
+    //         id: 2,
+    //         title: 'Product 2',
+    //         price: 100000,
+    //         specialPrice: 80000,
+    //         image: "/images/product/image@2x.png",
+    //         brand: {
+    //             id: 1,
+    //             name: "Brand 1"
+    //         }
+    //     },
+    //     {
+    //         id: 3,
+    //         title: 'Product 3',
+    //         price: 100000,
+    //         specialPrice: 80000,
+    //         image: "/images/product/image@2x.png",
+    //         brand: {
+    //             id: 1,
+    //             name: "Brand 1"
+    //         }
+    //     },
+    //     {
+    //         id: 4,
+    //         title: 'Product 4',
+    //         price: 100000,
+    //         specialPrice: 80000,
+    //         image: "/images/product/image@2x.png",
+    //         brand: {
+    //             id: 1,
+    //             name: "Brand 1"
+    //         }
+    //     },
+    //     {
+    //         id: 5,
+    //         title: 'Product 5',
+    //         price: 100000,
+    //         specialPrice: 80000,
+    //         image: "/images/product/image@2x.png",
+    //         brand: {
+    //             id: 1,
+    //             name: "Brand 1"
+    //         }
+    //     }
+    // ];
 
     return (
         <Grid container spacing={5} className="py-5">
@@ -94,7 +123,7 @@ export default function ProductList() {
                         </FormControl>
                     </div>
                     <Grid container spacing={3} className="gy-5">
-                        {products.map((item) => (
+                        {products.data.products.map((item) => (
                             <Grid item xs="6" md="4"><ProductItem product={item} /></Grid>
                         ))}
                     </Grid>

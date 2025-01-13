@@ -17,7 +17,7 @@
   text-align: center;
   display: flex;
   align-items: flex-end;
-  width: 676px;
+  /* width: 676px; */
 }
 .containerTitle {
   align-self: stretch;
@@ -28,7 +28,7 @@
   justify-content: center;
   gap: var(--gap-5xs);
   text-align: left;
-  font-size: var(--headline-medium-medium-moderate-size);
+  font-size: var(--headline-medium-medium-small-size);
   color: var(--typography-color-default);
   font-family: var(--headline-medium-medium-moderate);
 }

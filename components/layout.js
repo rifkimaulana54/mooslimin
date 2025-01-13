@@ -9,24 +9,58 @@ import {
   // Container,
   Dropdown,
 } from "react-bootstrap";
-import React, { useState } from 'react';
+import { useState, useEffect } from "react";
 import Footer from './footer/footer';
 import { useRouter } from 'next/router';
 import { AppBar, Box, Container, IconButton, InputBase, Menu, Toolbar, Button, MenuItem, Link } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
-
+import Grid from '@mui/material/Grid';
+import MenuIcon from '@mui/icons-material/Menu';
+import Collapse from '@mui/material/Collapse';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import ArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import ArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import ClearIcon from '@mui/icons-material/Clear';
 
 const name = 'Errol Widhavian';
 export const siteTitle = 'Next.js Sample Website';
 
+
 export default function Layout({ children, home }) {
   const router = useRouter();
-  const [show, setShow] = useState(false);
-  const [showBrand, setShowBrand] = useState(false);
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [anchorElMenu, setAnchorElMenu] = useState(null);
+  const [menus, setMenus] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [clicked, setClicked] = useState(false);
+  const [activeMenuId, setActiveMenuId] = useState(null);
 
+
+  const handleCollapse = (id) => {
+    setClicked((prevState) => ({
+      ...prevState,
+      [id]: !prevState[id], // Toggle state berdasarkan ID menu
+    }));
+  };
+
+  useEffect(() => {
+    const fetchMenus = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/menu/list");
+        const data = await response.json();
+        setMenus(data);
+      } catch (error) {
+        console.error("Failed to fetch menu:", error);
+      } finally {
+        setIsLoading(false); // Menyembunyikan loading setelah fetch selesai
+      }
+    };
+
+    fetchMenus();
+  }, []);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -43,15 +77,15 @@ export default function Layout({ children, home }) {
     setAnchorElUser(null);
   };
 
-  function handleClickMenu(event) {
-    if (anchorElMenu !== event.currentTarget) {
-      setAnchorElMenu(event.currentTarget);
-    }
-  }
+  const handleClickMenu = (event, menuId) => {
+    setAnchorElMenu(event.currentTarget);
+    setActiveMenuId(menuId);
+  };
 
-  function handleCloseMenu() {
+  const handleCloseMenu = () => {
     setAnchorElMenu(null);
-  }
+    setActiveMenuId(null);
+  };
 
   const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -104,6 +138,134 @@ export default function Layout({ children, home }) {
     },
   });
 
+  const buildMenuHierarchy = (menus) => {
+    const menuMap = {};
+  
+    menus?.forEach((menu) => {
+      menuMap[menu.id] = { ...menu, children: [] };
+    });
+  
+    const menuHierarchy = [];
+  
+    menus?.forEach((menu) => {
+      if (menu.menu_parent) {
+        menuMap[menu.menu_parent]?.children.push(menuMap[menu.id]);
+      } else {
+        menuHierarchy.push(menuMap[menu.id]);
+      }
+    });
+  
+    return menuHierarchy;
+  };
+  
+  const menuHierarchy = buildMenuHierarchy(menus.data?.menus);
+  
+  const renderTopMenu = (menu) => (
+    <div key={menu.id}>
+      <Link
+        href={menu.menu_url || '#'}
+        sx={{ m: 2, color: 'text.secondary', textDecoration: 'none' }}
+        aria-haspopup={menu.children.length > 0 ? "true" : "false"}
+        onMouseOver={(event) => handleClickMenu(event, menu.id)}>
+        {menu.menu_name}
+        {menu.children.length > 0 && (
+          <>
+            {clicked[menu.id] ? <ArrowUpIcon /> : <ArrowDownIcon />}
+            <Menu
+              id="simple-menu"
+              anchorEl={anchorElMenu}
+              open={Boolean(anchorElMenu) && activeMenuId === menu.id}
+              onClose={handleCloseMenu}
+              MenuListProps={{ onMouseLeave: handleCloseMenu }}
+              marginThreshold={0}
+              elevation={0}
+              slotProps={{
+                paper: {
+                  sx: {
+                    mt: '20px',
+                    width: '100%',
+                    maxWidth: 'unset',
+                    left: '0px',
+                    right: '0px',
+                  },
+                },
+              }}>
+              <Container>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Grid 
+                    container
+                    direction="row"
+                    justifyContent="center"
+                    spacing={2}
+                  >
+                    {menu.children.map((submenu) => (
+                      <Grid item xs={2} md={2} key={submenu.id}>
+                        <MenuItem sx={{ justifyContent: 'center' }} onClick={handleCloseMenu}>
+                          <b>{submenu.menu_name}</b>
+                        </MenuItem>
+                        {submenu.children.map((level3) => (
+                            <MenuItem sx={{ justifyContent: 'center'}} onClick={handleCloseMenu}>{level3.menu_name}</MenuItem>
+                        ))}
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              </Container>
+            </Menu>
+          </>
+        )}
+      </Link>
+    </div>
+  );
+  
+
+  const renderSideMenu = (menu) => (
+    <Box key={menu.id} sx={{ p: 1, display: { md: 'none' } }}>
+      {/* Parent Menu */}
+      <Link
+        href={menu.menu_target || '#'}
+        id="margin-normal"
+        sx={{ color: 'text.secondary' }}
+        aria-haspopup={menu.children.length > 0 ? 'true' : 'false'}
+        onClick={(event) => {
+          if (menu.children.length > 0) {
+            event.preventDefault();
+            handleCollapse(menu.id); // Update state hanya untuk menu ini
+          } else {
+            router.push(menu.menu_url || '#');
+          }
+        }}
+        >
+        <Row>
+          <Col xs={menu.children.length > 0 ? 10 : 12}>{menu.menu_name}</Col>
+          {
+            menu.children.length > 0 && (
+              <Col xs="2">
+                {clicked[menu.id] ? <ArrowUpIcon /> : <ArrowDownIcon />}
+              </Col>
+            )
+          }
+        </Row>
+      </Link>
+  
+      {/* Submenu */}
+      {menu.children.length > 0 && (
+        <Collapse in={clicked[menu.id] || false}>
+          <Box sx={{p: 1, display: { md: 'none' } }}>
+            <Link
+              href={menu.menu_target || '#'}
+              id="margin-normal"
+              sx={{color: 'text.secondary' }}
+              aria-haspopup="true"
+              onClick={() => router.push('#')}>
+              {menu.children.map((submenu) => renderSideMenu(submenu))}
+            </Link>
+          </Box>
+        </Collapse>
+      )}
+    </Box>
+  );
+  
 
   return (
     <div>
@@ -128,12 +290,73 @@ export default function Layout({ children, home }) {
         <AppBar position="static" color="inherit" elevation={0}>
           <Container maxWidth="xl">
             <Toolbar>
-              <Box sx={{ flexGrow: 1, display: { xs: 'flex' } }}>
+              <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'block' } }}>
                 <img src="/images/logo.svg" alt="Mooslimin" width="144" height="40" />
               </Box>
-              <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                <div>
+              <IconButton
+                size="large"
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                sx={{ flexGrow: 0, display: {md: 'none' } }}
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleCollapse('sidebar_menu');
+                }}
+                >
+                {clicked['sidebar_menu'] ? <ClearIcon /> : <MenuIcon />}
+              </IconButton>
+              <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+                <img src="/images/logo.svg" alt="Mooslimin" width="100" height="40" />
+              </Box>
+
+              <Box sx={{ flexGrow: 8, display: { xs: 'none', md: 'flex' } }}>
+                {isLoading ? (
+                  ''
+                ) : (
+                  menuHierarchy.map((menu) => renderTopMenu(menu))
+                )}
+                {/* {isLoading ? (
+                  ''
+                ) : (
+                  menus?.data?.menus?.map((menu, index) => (
+                    <div key={index}>
+                      <Link
+                        href={menu.menu_url ||'#'}
+                        id="margin-normal"
+                        sx={{ m: 2, color: 'text.secondary' }}
+                        aria-haspopup="true"
+                        onClick={() => router.push(menu.menu_url)}
+                      >
+                        {menu.menu_name}
+                      </Link>
+                      <Menu
+                        id={`simple-menu-${index}`}
+                        anchorEl={anchorElMenu}
+                        open={Boolean(anchorElMenu)}
+                        onClose={handleCloseMenu}
+                        MenuListProps={{ onMouseLeave: handleCloseMenu }}
+                        marginThreshold={0}
+                        elevation={0}
+                        slotProps={{
+                          paper: {
+                            sx: {
+                              mt: '20px',
+                              width: '100%',
+                              maxWidth: 'unset',
+                              left: '0px',
+                              right: '0px',
+                            },
+                          },
+                        }}
+                      >
+                      </Menu>
+                    </div>
+                  ))
+                )} */}
+                {/* <div>
                   <Link
+                    href="#"
                     aria-owns={anchorElMenu ? "simple-menu" : undefined}
                     aria-haspopup="true"
                     onClick={() => router.push("new-arrivals")}
@@ -163,28 +386,43 @@ export default function Layout({ children, home }) {
                     }}
                   >
                     <Container>
-                      <MenuItem onClick={handleCloseMenu}>Profile</MenuItem>
-                      <MenuItem onClick={handleCloseMenu}>My account</MenuItem>
-                      <MenuItem onClick={handleCloseMenu}>Logout</MenuItem>
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Grid 
+                          container
+                          direction="row"
+                          justifyContent="center"
+                          alignItems="center" spacing={2}>
+                          <Grid item xs={2} md={2} >
+                            <MenuItem sx={{ justifyContent: 'center'}} onClick={handleCloseMenu} ><b>Setelan Harian</b></MenuItem>
+                            <MenuItem sx={{ justifyContent: 'center'}} onClick={handleCloseMenu}>Kaos</MenuItem>
+                            <MenuItem sx={{ justifyContent: 'center'}} onClick={handleCloseMenu}>Sriwal</MenuItem>
+                            <MenuItem sx={{ justifyContent: 'center'}} onClick={handleCloseMenu}>Dompet</MenuItem>
+                          </Grid>
+                          <Grid item xs={2} md={2} >
+                            <MenuItem sx={{ justifyContent: 'center'}} onClick={handleCloseMenu}><b>Ngantor Casual</b></MenuItem>
+                            <MenuItem sx={{ justifyContent: 'center'}} onClick={handleCloseMenu}>Kemeja</MenuItem>
+                            <MenuItem sx={{ justifyContent: 'center'}} onClick={handleCloseMenu}>Sepatu</MenuItem>
+                            <MenuItem sx={{ justifyContent: 'center'}} onClick={handleCloseMenu}>Kaos</MenuItem>
+                          </Grid>
+                        </Grid>
+                      </Box>
                     </Container>
 
                   </Menu>
-                </div>
-
+                </div> */}
               </Box>
 
-              <Search>
+              <Search sx={{ flexGrow: 4, display: { xs: 'none', md: 'flex' }, border: "1px solid grey", borderRadius: "50px" }}>
                 <SearchIconWrapper>
-                  <SearchIcon />
+                  <SearchIcon sx={{fontSize: "15px"}} />
                 </SearchIconWrapper>
                 <StyledInputBase
                   placeholder="Search…"
                   inputProps={{ 'aria-label': 'search' }}
+                  className='search-input-based'
                 />
               </Search>
 
-
-              {/* ICON USER */}
               <Box sx={{ flexGrow: 0 }}>
                 <IconButton onClick={handleOpenUserMenu}>
                   <img alt="" src="/images/component/navigation/person.svg" />
@@ -213,11 +451,6 @@ export default function Layout({ children, home }) {
                     <div>Akun Saya</div>
 
                   </Container>
-                  {/* {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">{setting}</Typography>
-                  </MenuItem>
-                ))} */}
                 </Menu>
               </Box>
               <Box sx={{ flexGrow: 0 }}>
@@ -248,22 +481,40 @@ export default function Layout({ children, home }) {
                     <div>Akun Saya</div>
 
                   </Container>
-                  {/* {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">{setting}</Typography>
-                  </MenuItem>
-                ))} */}
                 </Menu>
               </Box>
               <Box sx={{ flexGrow: 0 }}>
                 <label style={{ fontSize: "16px", alignItems: "center" }}>0</label>
               </Box>
             </Toolbar>
-
           </Container>
-
+          <Box>
+            <Box
+              sx={{
+                '& > :not(style)': {
+                  // display: 'flex',
+                  position: 'fixed',
+                  justifyContent: 'space-around',
+                },
+              }}>
+              <div>
+                <Box sx={{ width: '50%' }}>
+                  <Collapse orientation="horizontal" in={clicked['sidebar_menu'] || false}>
+                    <Card sx={{ minWidth: 220, borderRadius: "0", height: "550px", backgroundColor: "#f2e4cc", color: "grey", display: { md: 'none' } }}>
+                      <CardContent sx={{ maxHeight: '450px', overflowY: 'auto' }}>
+                        {isLoading ? (
+                          ''
+                        ) : (
+                          menuHierarchy.map((menu) => renderSideMenu(menu))
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Collapse>
+                </Box>
+              </div>
+            </Box>
+          </Box>
         </AppBar>
-
 
 
         {/* <Navbar bg="light" expand="md" className="navbar-mooslimin">
