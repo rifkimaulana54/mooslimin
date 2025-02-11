@@ -6,7 +6,7 @@ export default function ItemBrand({ brand }) {
     return (
         <Link href={"brands/" + brand.id} className={styles.brand}>
             <div className={styles.card}>
-                <img className={styles.imageBrand} alt="" src="/banner@2x.png" />
+                <img className={styles.imageBrand} alt="" src="" />
                 <div className={styles.header}>
                     <div className={styles.text}>
                         <div className={styles.brandName}>{brand.name}</div>

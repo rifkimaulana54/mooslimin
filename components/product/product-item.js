@@ -7,11 +7,11 @@ import React, { useState, useEffect } from 'react';
 export default function ProductItem({ product }) {
   const [image, setImage] = useState("");
   const [hoverImage, setHoverImage] = useState("");
-  const defaultImage = '/images/product/image@2x.png';
+  const defaultImage = '/images/img_placeholder.png';
 
   useEffect(() => {
     if (product.metas) {
-      const imageMeta = product.metas.find(meta => meta.meta_key === 'images');
+      const imageMeta = product.metas.find(meta => meta.meta_key === 'image_gallery');
       if (imageMeta && imageMeta.meta_value) {
         try {
           const imageArray = JSON.parse(imageMeta.meta_value);

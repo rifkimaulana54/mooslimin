@@ -1,17 +1,20 @@
 export default async function handler(req, res) {
     try {
-        const response = await fetch(`${process.env.API_BASE_URL}user/v1_0/menus`, {
-            method: 'POST', // Using POST method
+        if (req.method !== "POST") {
+            return res.status(405).json({ message: "Method Not Allowed" });
+        }
+
+        // Pastikan body bisa dibaca
+        let { id } = req.body;
+
+        if (!id) {
+            return res.status(400).json({ message: req.body });
+        }
+        const response = await fetch(`${process.env.API_BASE_URL}product/v1_0/detail/`+req.body.id, {
+            method: 'GET', 
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: new URLSearchParams({
-                filter: '{"menu_type":["top_menu"]}',
-                // page: "1",
-                // per_page: "5",
-                sort: "asc",
-                sort_by: "order",
-            })
         });
         const data = await response.json();
         

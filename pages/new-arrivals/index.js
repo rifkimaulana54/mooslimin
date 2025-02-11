@@ -13,7 +13,7 @@ export default function NewArrivals({ allPostsData }) {
             </Head>
             <Container>
                 <Breadcrumb className="py-4">
-                    <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+                    <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
                     <Breadcrumb.Item active>Produk Terbaru</Breadcrumb.Item>
                 </Breadcrumb>
                 <BannerContent title={"Produk Terbaru"} subtitle={"Temukan brand dan produk terbaru yang telah kami kurasi."} />

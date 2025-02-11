@@ -80,6 +80,10 @@ export default function Layout({ children, home }) {
   const handleClickMenu = (event, menuId) => {
     setAnchorElMenu(event.currentTarget);
     setActiveMenuId(menuId);
+    setClicked((prev) => ({
+      ...prev,
+      [menuId]: !prev[menuId], // Toggle antara true & false
+    }));
   };
 
   const handleCloseMenu = () => {
@@ -161,16 +165,16 @@ export default function Layout({ children, home }) {
   const menuHierarchy = buildMenuHierarchy(menus.data?.menus);
   
   const renderTopMenu = (menu) => (
-    <div key={menu.id}>
+    <div key={menu.id} className={menu.children.length > 0 ? '' : 'pt-1'}>
       <Link
         href={menu.menu_url || '#'}
         sx={{ m: 2, color: 'text.secondary', textDecoration: 'none' }}
         aria-haspopup={menu.children.length > 0 ? "true" : "false"}
-        onMouseOver={(event) => handleClickMenu(event, menu.id)}>
+        onClick={(event) => handleClickMenu(event, menu.id)}>
         {menu.menu_name}
         {menu.children.length > 0 && (
           <>
-            {clicked[menu.id] ? <ArrowUpIcon /> : <ArrowDownIcon />}
+            {clicked[menu.id] ? <ArrowUpIcon /> : <ArrowDownIcon sx={{ m: 0, p: 0 }} />}
             <Menu
               id="simple-menu"
               anchorEl={anchorElMenu}
@@ -252,14 +256,7 @@ export default function Layout({ children, home }) {
       {menu.children.length > 0 && (
         <Collapse in={clicked[menu.id] || false}>
           <Box sx={{p: 1, display: { md: 'none' } }}>
-            <Link
-              href={menu.menu_target || '#'}
-              id="margin-normal"
-              sx={{color: 'text.secondary' }}
-              aria-haspopup="true"
-              onClick={() => router.push('#')}>
               {menu.children.map((submenu) => renderSideMenu(submenu))}
-            </Link>
           </Box>
         </Collapse>
       )}

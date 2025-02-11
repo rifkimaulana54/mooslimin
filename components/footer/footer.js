@@ -149,10 +149,10 @@ export default function Footer() {
                   <div className={styles.text8}>
                     <div className={styles.outfitfesyen}>Follow us Temukan kami</div>
                     <div className={styles.placeholder}>
-                      <a href="#"><img className={styles.iconSocmed} alt="Instagram" src="images/component/footer/icon/instagram.svg" /></a>
-                      <a href="#"><img className={styles.iconSocmed} alt="Tiktok" src="images/component/footer/icon/tiktok.svg" /></a>
-                      <a href="#"><img className={styles.iconSocmed} alt="Facebook" src="images/component/footer/icon/facebook.svg" /></a>
-                      <a href="#"><img className={styles.iconSocmed} alt="Youtube" src="images/component/footer/icon/youtube.svg" /></a>
+                      <a href="#"><img className={styles.iconSocmed} alt="Instagram" src="/images/component/footer/icon/instagram.svg" /></a>
+                      <a href="#"><img className={styles.iconSocmed} alt="Tiktok" src="/images/component/footer/icon/tiktok.svg" /></a>
+                      <a href="#"><img className={styles.iconSocmed} alt="Facebook" src="/images/component/footer/icon/facebook.svg" /></a>
+                      <a href="#"><img className={styles.iconSocmed} alt="Youtube" src="/images/component/footer/icon/youtube.svg" /></a>
                     </div>
                   </div>
                 </div>

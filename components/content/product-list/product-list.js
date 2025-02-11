@@ -1,43 +1,49 @@
 import ProductItem from "../../product/product-item";
 import Filter from "./filter/filter";
-import { FormControl, MenuItem, Select, Pagination, Grid, Container } from "@mui/material";
+import { FormControl, MenuItem, Select, Pagination, Grid, Container, } from "@mui/material";
+import { Col} from "react-bootstrap";
 import { useState, useEffect } from "react";
 
 export default function ProductList() {
     const [sort, setSort] = useState(1);
     const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
 
     const handleChange = (event) => {
         setSort(event.target.value);
     };
     
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const response = await  fetch("/api/product/list", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        category: "electronics", // Ganti dengan nilai sesuai kebutuhan
-                    }),
-                });
-                const data = await response.json();
-                setProducts(data);
-                setLoading(false);
-            } catch (error) {
-                console.error("Failed to fetch products:", error);
-                setLoading(false);
-            }
-        };
-
+        const timer = setTimeout(() => {
+            const fetchProducts = async () => {
+                try {
+                    const response = await  fetch("/api/product/list", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                        page: "1",
+                        per_page: "4",
+                        sort: "desc",
+                        sort_by: "id",
+                        }),
+                    });
+                    const data = await response.json();
+                    setProducts(data);
+                    setIsLoading(false);
+                } catch (error) {
+                    console.error("Failed to fetch products:", error);
+                    setIsLoading(false);
+                }
+            };
+    
         fetchProducts();
+            setIsLoading(false);
+        }, 2000);
+    
+        return () => clearTimeout(timer);
     }, []);
-    if (loading) {
-        return <div>Loading...</div>;
-    }
     // const products = [
     //     {
     //         id: 1,
@@ -123,9 +129,73 @@ export default function ProductList() {
                         </FormControl>
                     </div>
                     <Grid container spacing={3} className="gy-5">
-                        {products.data.products.map((item) => (
-                            <Grid item xs="6" md="4"><ProductItem product={item} /></Grid>
-                        ))}
+                        {isLoading
+                            ? Array.from({ length: 3 }).map((_, index) => (
+                                <Col xs="6" md="4" key={index}>
+                                    <div className="placeholder-card">
+                                        <div className="placeholder-image" />
+                                        <div className="placeholder-text" />
+                                        <div className="placeholder-text short" />
+                                    </div>
+                                </Col>
+                            ))
+                            : 
+                            products.data?.products.map((item) => (
+                                <Grid item xs="6" md="4"><ProductItem product={item} /></Grid>
+                            ))
+                        }
+                        <style jsx>{`
+                            .placeholder-title {
+                                border: 1px solid #e0e0e0;
+                                border-radius: 20px;
+                                width: 35%;
+                                padding: 9px;
+                                background: #f5f5f5;
+                                align-items: center;
+                            }
+                            .placeholder-card {
+                                border: 1px solid #e0e0e0;
+                                border-radius: 8px;
+                                padding: 16px;
+                                background: #f5f5f5;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                margin: 20px 10px;
+                            }
+
+                            .placeholder-image {
+                                width: 100%;
+                                height: 300px;
+                                border-radius: 8px;
+                                background: linear-gradient(90deg, #e0e0e0 25%, #f5f5f5 50%, #e0e0e0 75%);
+                                background-size: 200% 100%;
+                                animation: shimmer 1.5s infinite;
+                            }
+
+                            .placeholder-text {
+                                width: 80%;
+                                height: 16px;
+                                margin: 12px 0;
+                                background: linear-gradient(90deg, #e0e0e0 25%, #f5f5f5 50%, #e0e0e0 75%);
+                                background-size: 200% 100%;
+                                animation: shimmer 1.5s infinite;
+                            }
+
+                            .placeholder-text.short {
+                                width: 50%;
+                            }
+
+                            @keyframes shimmer {
+                                0% {
+                                    background-position: -200% 0;
+                                }
+                                100% {
+                                    background-position: 200% 0;
+                                }
+                            }
+                        `}</style>
+                        
                     </Grid>
                     <Grid>
                         <Pagination className="pt-5 d-flex justify-content-center" count={10} />

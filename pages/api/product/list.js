@@ -6,11 +6,11 @@ export default async function handler(req, res) {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: new URLSearchParams({
-                // filter: '{"type":["main_menu"]}',
-                // page: "1",
-                // per_page: "20",
-                sort: "asc",
-                sort_by: "id",
+                filter: req.body.filter,
+                page: req.body.page,
+                per_page: req.body.per_page,
+                sort: req.body.sort,
+                sort_by: req.body.sort_by,
             })
         });
         const data = await response.json();
