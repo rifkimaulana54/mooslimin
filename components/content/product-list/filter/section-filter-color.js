@@ -27,7 +27,7 @@ export default function SectionFilterColor() {
     };
 
     const isCheked = (id) => {
-        console.log("CEK ID " + id)
+        // console.log("CEK ID " + id)
         checkedIds.includes(id);
     };
 

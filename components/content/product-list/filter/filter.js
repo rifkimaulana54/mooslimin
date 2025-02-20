@@ -7,9 +7,47 @@ import SectionFilterSize from "./section-filter-size";
 import SectionFilterColor from "./section-filter-color";
 import SectionFilterPrice from "./section-filter-price";
 import { FilterList } from "@mui/icons-material";
+import { useState, useEffect } from "react";
 
 export default function Filter() {
-    var brands = [{ id: 1, name: "Brand 1" }, { id: 1, name: "Brand 2" }];
+    const [filter, setFilter] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const fetchFilter = async () => {
+                try {
+                    const response = await  fetch("/api/product/filter", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                        // page: "1",
+                        // per_page: "4",
+                        // sort: "desc",
+                        // sort_by: "id",
+                        }),
+                    });
+                    const data = await response.json();
+                    setFilter(data);
+                    setIsLoading(false);
+                } catch (error) {
+                    console.error("Failed to fetch Filter:", error);
+                    setIsLoading(false);
+                }
+            };
+    
+        fetchFilter();
+            setIsLoading(false);
+        }, 2000);
+    
+        return () => clearTimeout(timer);
+    }, []);
+
+    // console.log(filter?.data?.product_filters);
+
+    var brands = filter?.data?.product_filters?.brands;
     var categories = [{ id: 1, name: "Category 1", total: 10 }];
     var sizes = [{ id: 1, name: "22" }, { id: 2, name: "23" }, { id: 3, name: "24" }, { id: 4, name: "25" }];
     return (
